@@ -5,7 +5,7 @@ import sys
 import blinker as _
 import time
 
-import mysql.connector
+import pymysql.cursors
 import json
 import requests
 
@@ -36,14 +36,14 @@ dictConfig({
 })
 
 ## Connecting MySQL
-mydb = mysql.connector.connect(
+connection = pymysql.connect(
     host=env_config.db_host,
     user=env_config.db_username,
-    passwd=env_config.db_password,
-    database=env_config.db_name
+    password=env_config.db_password,
+    db=env_config.db_name,
+    charset='utf8mb4',
+    cursorclass=pymysql.cursors.DictCursor
 )
-mycursor = mydb.cursor()
-
 ## Flask
 app = Flask(__name__)
 
@@ -51,14 +51,14 @@ app = Flask(__name__)
 def api_entry():
     start_time = time.time()
 
-    app.logger.info('getting root endpoint')
-#    return 'Entrypoint to the Application'
+    app.logger.info('getting entity from table')
     name = flask_request.args.get('name', str)
-    mycursor.execute("SELECT Name, UUID, Number FROM kikeyama_table where name='%s'" % name)
-    myresult = mycursor.fetchall()
-    
-    for x in myresult:
-        result = json.dumps(x)
+
+    with connection.cursor() as cursor:
+        sql = "SELECT Name, UUID, Number FROM kikeyama_table where name='%s'" % name
+        cursor.execute(sql)
+        result = cursor.fetchone()
+        
         return result
 
 @app.route('/api/apm')
@@ -76,18 +76,38 @@ def post_endpoint():
     app.logger.info('posting message: ' + flask_request.form['message'])
     return flask_request.form['message']
 
-@app.route('/lambda')
+@app.route('/api/lambda')
 def lambda_endpoint():
     app.logger.info('getting lambda endpoint')
     fqdn = env_config.api_fqdn
-#    url = 'https://%s/demo/python' %fqdn
     q = {'TableName': 'kikeyama-dynamodb'}
-    r = requests.get('https://%s/demo/python' %fqdn, params=q)
+#    r = requests.get('https://%s/demo/python' %fqdn, params=q)
+#    dict_r = json.loads(r.text)
+#    if dict_r['ResponseMetadata']['HTTPStatusCode'] == 200:
+#        app.logger.info('lambda call: Returned ' + str(dict_r['Count']) + ' results with RequestId: ' + dict_r['ResponseMetadata']['RequestId'])
+#    return 'Lambda Traces'
+
+    ## For API Gateway without Proxy Integraion testing
+    r = requests.get('https://%s/demo/non-proxy-integration' %fqdn, params=q)
     dict_r = json.loads(r.text)
-    if dict_r['ResponseMetadata']['HTTPStatusCode'] == 200:
-        app.logger.info('lambda call: Returned ' + str(dict_r['Count']) + ' results with RequestId: ' + dict_r['ResponseMetadata']['RequestId'])
+    if dict_r['statusCode'] == 200:
+        app.logger.info('SUCCESS')
     return 'Lambda Traces'
+    ##
+
+@app.route('/api/lambda/jaeger')
+def lambda_jaeger_endpoint():
+    app.logger.info('getting lambda jaeger demo endpoint')
+    fqdn = env_config.api_fqdn
+    r = requests.get('https://%s/demo/jaeger-sample' %fqdn)
+    dict_r = json.loads(r.text)
+    app.logger.info('lambda call: Result: ' + dict_r['result'] + ' | Trace ID: ' + dict_r['trace_id'])
+    return 'Lambda Jaeger Traces'
+
 
 if __name__ == '__main__':
     app.logger.info('%(message)s This is __main__ log')
-    app.run(host='0.0.0.0', port='5050')
+    try:
+        app.run(host='0.0.0.0', port='5050')
+    finally:
+        connection.close()

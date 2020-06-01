@@ -1,0 +1,7 @@
+flask
+blinker
+PyMySQL
+requests
+signalfx-tracing
+jaeger-client
+flask_opentracing
