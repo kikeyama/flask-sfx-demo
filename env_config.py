@@ -13,6 +13,3 @@ api_fqdn = os.environ.get('API_FQDN', 'xxxxxxxx.execute-api.us-east-1.amazonaws.
 ORG_TOKEN = os.environ.get('ORG_TOKEN', '')
 API_TOKEN = os.environ.get('API_TOKEN', '')
 ACCESS_TOKEN = os.environ.get('ACCESS_TOKEN', '')
-
-# Jaeger settings
-JAEGER_HOST = os.environ.get('JAEGER_HOST', 'localhost')
