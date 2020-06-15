@@ -2,6 +2,7 @@ flask
 blinker
 PyMySQL
 requests
+cryptography
 signalfx-tracing
 jaeger-client
 flask_opentracing
