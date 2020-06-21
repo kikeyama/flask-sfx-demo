@@ -6,6 +6,7 @@ import blinker as _
 import time
 
 import pymysql.cursors
+from pymysqlpool.pool import Pool
 import json
 import requests
 
@@ -36,14 +37,22 @@ dictConfig({
 })
 
 ## Connecting MySQL
-connection = pymysql.connect(
-    host=env_config.db_host,
-    user=env_config.db_username,
-    password=env_config.db_password,
-    db=env_config.db_name,
-    charset='utf8mb4',
-    cursorclass=pymysql.cursors.DictCursor
-)
+pool = Pool(host=env_config.db_host, 
+    port=int(env_config.db_port), 
+    user=env_config.db_username, 
+    password=env_config.db_password, 
+    db=env_config.db_name)
+pool.init()
+connection = pool.get_conn()
+
+#connection = pymysql.connect(
+#    host=env_config.db_host,
+#    user=env_config.db_username,
+#    password=env_config.db_password,
+#    db=env_config.db_name,
+#    charset='utf8mb4',
+#    cursorclass=pymysql.cursors.DictCursor
+#)
 ## Flask
 app = Flask(__name__)
 

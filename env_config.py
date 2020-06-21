@@ -2,6 +2,7 @@ import os
 
 # MySQL settings
 db_host = os.environ.get('DB_HOST', 'localhost')
+db_port = os.environ.get('DB_PORT', '3306')
 db_username = os.environ.get('DB_USERNAME', 'admin')
 db_password = os.environ.get('DB_PASSWORD', 'password')
 db_name = os.environ.get('DB_NAME', 'defaultdb')
