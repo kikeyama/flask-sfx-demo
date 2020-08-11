@@ -11,6 +11,7 @@ import json
 import requests
 
 from logging.config import dictConfig
+import logging
 
 # DB Config
 import env_config
@@ -21,17 +22,21 @@ FORMAT = ('%(asctime)s %(levelname)s [%(name)s] [%(filename)s:%(lineno)d] '
 
 dictConfig({
     'version': 1,
-    'formatters': {'default': {
-        'format': FORMAT,
-    }},
-    'handlers': {'console': {
-        'class': 'logging.StreamHandler',
-        'level': 'INFO',
-        'formatter': 'default',
-        'stream': 'ext://sys.stdout'
-    }},
+    'formatters': {
+        'default': {
+            'format': FORMAT,
+        }
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'INFO',
+            'formatter': 'default',
+            'stream': 'ext://sys.stdout'
+        }
+    },
     'root': {
-        'level': 'DEBUG',
+        'level': 'INFO',
         'handlers': ['console']
     }
 })
