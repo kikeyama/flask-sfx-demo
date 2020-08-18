@@ -1,4 +1,4 @@
-FROM python:3
+FROM python:3.8
 ADD flask_demo.py /
 ADD env_config.py /
 ADD requirements.txt /

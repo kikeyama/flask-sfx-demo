@@ -75,6 +75,11 @@ def api_entry():
         
         return result
 
+@app.route('/healthz')
+def healthz_endpoint():
+    app.logger.info('getting healthz endpoint')
+    return json.dumps({'status':'ok'})
+
 @app.route('/api/apm')
 def apm_endpoint():
     app.logger.info('getting apm endpoint')
@@ -87,8 +92,9 @@ def trace_endpoint():
 
 @app.route('/api/post', methods=['POST'])
 def post_endpoint():
-    app.logger.info('posting message: ' + flask_request.form['message'])
-    return flask_request.form['message']
+    app.logger.info('posting post endpoint')
+    app.logger.info('posting message: ' + flask_request.json['message'])
+    return flask_request.json['message']
 
 ## /api/lambda?type=proxy|non-proxy
 @app.route('/api/lambda')
