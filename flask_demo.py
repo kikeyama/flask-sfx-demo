@@ -78,7 +78,7 @@ def api_entry():
 @app.route('/healthz')
 def healthz_endpoint():
     app.logger.info('getting healthz endpoint')
-    return json.dumps({'status':'ok'})
+    return json.dumps({'status':'ok'}), 200, {'Content-Type': 'application/json'}
 
 @app.route('/api/apm')
 def apm_endpoint():
