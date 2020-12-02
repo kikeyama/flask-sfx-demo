@@ -41,14 +41,16 @@ dictConfig({
     }
 })
 
-## Connecting MySQL
-pool = Pool(host=env_config.db_host, 
-    port=int(env_config.db_port), 
-    user=env_config.db_username, 
-    password=env_config.db_password, 
-    db=env_config.db_name)
-pool.init()
-connection = pool.get_conn()
+def connect_mysql():
+    # Connecting MySQL with connection pool
+    pool = Pool(host=env_config.db_host, 
+        port=int(env_config.db_port), 
+        user=env_config.db_username, 
+        password=env_config.db_password, 
+        db=env_config.db_name)
+    pool.init()
+    global connection
+    connection = pool.get_conn()
 
 #connection = pymysql.connect(
 #    host=env_config.db_host,
@@ -58,8 +60,21 @@ connection = pool.get_conn()
 #    charset='utf8mb4',
 #    cursorclass=pymysql.cursors.DictCursor
 #)
+
 ## Flask
 app = Flask(__name__)
+
+## Flask-pymysql (https://github.com/rcbensley/flask-pymysql)
+#pymysql_connect_kwargs = {
+#    'host': env_config.db_host,
+#    'port': int(env_config.db_port),
+#    'user': env_config.db_username,
+#    'password': env_config.db_password,
+#    'db': env_config.db_name
+#}
+#app.config['pymysql_kwargs'] = pymysql_connect_kwargs
+#mysql = MySQL(app)
+
 
 @app.route('/')
 def api_entry():
@@ -67,6 +82,15 @@ def api_entry():
 
     app.logger.info('getting entity from table')
     name = flask_request.args.get('name', str)
+
+#    # Flasy-pymysql
+#    cur = mysql.connection.cursor()
+#    cur.execute('''SELECT Name, UUID, Number FROM kikeyama_table WHERE Name='%s' ''' % name)
+
+    if connection is None:
+        connect_mysql()
+
+    connection.ping(reconnect=True)
 
     with connection.cursor() as cursor:
         sql = "SELECT Name, UUID, Number FROM kikeyama_table where name='%s'" % name
@@ -162,6 +186,8 @@ def spring_endpoint():
 if __name__ == '__main__':
     app.logger.info('%(message)s This is __main__ log')
     try:
+        connect_mysql()
         app.run(host='0.0.0.0', port='5050')
     finally:
+        app.logger.info('close pymysql connection')
         connection.close()
