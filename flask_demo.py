@@ -18,7 +18,8 @@ import env_config
 
 ## Have flask use stdout as the logger
 FORMAT = ('%(asctime)s %(levelname)s [%(name)s] [%(filename)s:%(lineno)d] '
-          '- %(message)s')
+        '[signalfx.trace_id=%(sfxTraceId)s signalfx.span_id=%(sfxSpanId)s] '
+        '- %(message)s')
 
 dictConfig({
     'version': 1,
